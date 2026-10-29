@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Generation as a stream of R data</title>
+<style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+width: 0.8em;
+margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+}
+pre.numberSource { margin-left: 3em; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+</style>
+</head>
+
+<body>
+
+
+<header id="title-block-header">
+<h1 class="title">Generation as a stream of R data</h1>
+
+</header>
+
+
+<p>Token streaming is a development feature after relm 0.3.0. It adds <code>on_token</code> to asynchronous generation. The worker uses the loaded model while R receives small, ordered batches as ordinary data frames. The final promise still resolves to the same named character vector and seed. These examples require a local model and are shown without running or downloading one during document rendering.</p>
+<h2 id="collect-text-and-inspect-tokens">Collect text and inspect tokens</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(relm)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">llm</span>(<span class="st">&quot;/path/to/your/model.gguf&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>chunks <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>pending <span class="ot">&lt;-</span> <span class="fu">llm_generate</span>(m, <span class="st">&quot;Explain a confidence interval in two sentences.&quot;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">17</span>, <span class="at">async =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">on_token =</span> <span class="cf">function</span>(batch) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    chunks[[<span class="fu">length</span>(chunks) <span class="sc">+</span> <span class="dv">1</span>L]] <span class="ot">&lt;&lt;-</span> batch</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">paste0</span>(batch<span class="sc">$</span>text[batch<span class="sc">$</span>event <span class="sc">==</span> <span class="st">&quot;text&quot;</span>], <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>observed <span class="ot">&lt;-</span> promises<span class="sc">::</span><span class="fu">then</span>(pending, <span class="cf">function</span>(value) {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  events <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, chunks)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  reconstructed <span class="ot">&lt;-</span> <span class="fu">paste0</span>(events<span class="sc">$</span>text[events<span class="sc">$</span>event <span class="sc">==</span> <span class="st">&quot;text&quot;</span>], <span class="at">collapse =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">identical</span>(reconstructed, <span class="fu">unname</span>(<span class="fu">as.character</span>(value))))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">head</span>(events[events<span class="sc">$</span>event <span class="sc">==</span> <span class="st">&quot;token&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;token_pos&quot;</span>, <span class="st">&quot;token_id&quot;</span>, <span class="st">&quot;elapsed&quot;</span>)]))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}, <span class="cf">function</span>(error) {</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="fu">conditionMessage</span>(error))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+</div>
+<p>Run each example after the preceding promise has settled; close <code>m</code> after the last call. RStudio’s console stays available while the worker generates and the event loop delivers callbacks. A callback runs on R’s main thread: keep it short. Slow callbacks or storage can block R and slow the producer. <code>llm_cancel(m)</code> requests cooperative cancellation; it cannot interrupt an arbitrary C call immediately.</p>
+<p>Rows have <code>event_id</code>, <code>event</code>, <code>prompt_id</code>, <code>token_pos</code>, <code>token_id</code>, <code>text</code>, <code>elapsed</code>, <code>finish_reason</code> and <code>validated</code>. Indices are 1-based. A <code>token</code> row records a sampled non-EOG token; <code>text</code> rows contain committed text fragments; <code>prompt_end</code> marks successful completion of that prompt. Tokens are not words, characters or necessarily standalone UTF-8 strings. Text can be buffered to preserve decoder/stop semantics; long stop sequences can delay display. Concatenating text rows reproduces the final successful result, even when token boundaries split characters or stop strings.</p>
+<p>With <code>schema</code>, token/text rows are provisional (<code>validated = FALSE</code>); only that prompt’s successful end is independently schema-validated. A later failure can still reject the entire call. Already delivered data is not rolled back, and schema validity does not establish factual accuracy.</p>
+<h2 id="keep-a-rolling-window-instead-of-retaining-everything">Keep a rolling window instead of retaining everything</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>window <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pending <span class="ot">&lt;-</span> <span class="fu">llm_generate</span>(m, <span class="st">&quot;Count from 1 to 100.&quot;</span>, <span class="at">seed =</span> <span class="dv">17</span>, <span class="at">async =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">on_token =</span> <span class="cf">function</span>(batch) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    tokens <span class="ot">&lt;-</span> batch[batch<span class="sc">$</span>event <span class="sc">==</span> <span class="st">&quot;token&quot;</span>, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">nrow</span>(tokens)) <span class="fu">return</span>(<span class="fu">invisible</span>(<span class="cn">NULL</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    window <span class="ot">&lt;&lt;-</span> <span class="fu">tail</span>(<span class="fu">rbind</span>(window, tokens), <span class="dv">128</span>L)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    seconds <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(window<span class="sc">$</span>elapsed))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (seconds <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">message</span>(<span class="fu">round</span>((<span class="fu">nrow</span>(window) <span class="sc">-</span> <span class="dv">1</span>L) <span class="sc">/</span> seconds, <span class="dv">1</span>), <span class="st">&quot; tokens/s in this window&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  })</span></code></pre></div>
+</div>
+<p>This measures token production under the current workload, including any backpressure; it is not an unconstrained engine benchmark. Compare production <code>elapsed</code> with local receipt time when delivery lag matters. The native queue holds at most 256 events/256 KiB text and each callback at most 64 rows/64 KiB. Those are payload limits, not a whole-process RSS limit. A caller that stores every batch, as in the first example, owns that additional memory.</p>
+<h2 id="write-an-event-csv">Write an event CSV</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">file</span>(<span class="st">&quot;tokens.csv&quot;</span>, <span class="at">open =</span> <span class="st">&quot;wb&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pending <span class="ot">&lt;-</span> <span class="fu">llm_generate</span>(m, <span class="st">&quot;Explain bootstrap resampling.&quot;</span>, <span class="at">seed =</span> <span class="dv">17</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">async =</span> <span class="cn">TRUE</span>, <span class="at">on_token =</span> con)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>observed <span class="ot">&lt;-</span> promises<span class="sc">::</span><span class="fu">then</span>(pending, <span class="cf">function</span>(value) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">close</span>(con) <span class="co"># The caller opens and closes the connection.</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(value)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}, <span class="cf">function</span>(error) {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">close</span>(con)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="fu">conditionMessage</span>(error))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+</div>
+<p>Use an empty, seekable regular file opened in binary write mode. Text/raw connections, sockets, pipes and append destinations are outside this interface. Do not write or seek the connection while generation owns its stream. Closing it early stops delivery and rejects the call; errors can leave a partial file. The promise establishes successful completion, not the presence of one end row.</p>
+<p>Read the file with fixed column types and preserve literal <code>&quot;NA&quot;</code> text:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>events <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;tokens.csv&quot;</span>, <span class="at">fileEncoding =</span> <span class="st">&quot;UTF-8&quot;</span>, <span class="at">check.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.strings =</span> <span class="fu">character</span>(),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">colClasses =</span> <span class="fu">c</span>(<span class="st">&quot;integer&quot;</span>, <span class="st">&quot;character&quot;</span>, <span class="st">&quot;integer&quot;</span>, <span class="st">&quot;integer&quot;</span>, <span class="st">&quot;integer&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;character&quot;</span>, <span class="st">&quot;numeric&quot;</span>, <span class="st">&quot;character&quot;</span>, <span class="st">&quot;logical&quot;</span>))</span></code></pre></div>
+</div>
+<p>The CSV writer preserves the original text bytes. Base R’s reader normalizes embedded CRLF line endings to LF even inside quotes. If those exact line endings matter, retain callback text or use a CSV reader that preserves quoted CRLF; do not infer byte identity from this convenience reader.</p>
+<p><code>on_progress</code> remains a coalesced progress summary. <code>on_token</code> supplies ordered data without coalescing on successful calls. During every token callback the model is reserved, so other native operations report busy. Final <code>on_progress</code> runs after ownership is released. Streaming does not expose live activations or permit changing interventions while a worker is using the model.</p>
+
+
+
+
+
+</body></html>

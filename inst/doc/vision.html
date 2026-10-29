@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Seeing machines: a VLM answering questions about an image, locally</title>
+<style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+width: 0.8em;
+margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+}
+pre.numberSource { margin-left: 3em; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+</style>
+</head>
+
+<body>
+
+
+<header id="title-block-header">
+<h1 class="title">Seeing machines: a VLM answering questions about an image, locally</h1>
+
+</header>
+
+
+<p>Since v0.2.0, <code>relm</code> runs <strong>vision-language models</strong> (VLMs): language models with an attached image encoder, so a prompt can include pictures as well as text. Everything happens on your own machine — the image never leaves it — and the API is the one you already know: the same <code>llm()</code>, <code>llm_generate()</code>, and <code>llm_embed()</code>, each with one new argument.</p>
+<p>This vignette answers one question: <em>how do I ask a local model something about an image, from R?</em> We download a small open VLM, draw a test image with base graphics (so the whole document is self-contained), ask the model about it, and then use multimodal embeddings — an embedding is a numeric vector summarizing an input so that similar inputs get nearby vectors — for a tiny image-vs-text similarity check.</p>
+<p>The model pair was not available when this page was rendered, so the model outputs below are the <em>recorded</em> outputs of these exact chunks on the pinned pair (Apple-silicon Metal). Run the code on your machine to reproduce them.</p>
+<h2 id="get-the-model-once">Get the model (once)</h2>
+<p>A VLM in GGUF form ships as <strong>two</strong> files: the language model itself and its companion <strong>projector</strong> (an <code>mmproj-*.gguf</code>) — the small network that translates the image encoder’s output into the token-embedding space the language model reads. <code>relm</code>’s model registry pins an Apache-2.0 pair, downloaded over HTTPS and verified against a pinned SHA256 (a mismatch is deleted, never used):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (run_download) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(relm)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  model  <span class="ot">&lt;-</span> <span class="fu">llm_download</span>(<span class="st">&quot;qwen2-vl-2b-instruct-q4_k_m&quot;</span>)     <span class="co"># ~1 GB, verified</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  mmproj <span class="ot">&lt;-</span> <span class="fu">llm_download</span>(<span class="st">&quot;qwen2-vl-2b-instruct-mmproj-f16&quot;</span>) <span class="co"># ~1.3 GB, verified</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>Both calls are idempotent: a cached, checksum-matching file is returned without re-downloading, so this cell costs seconds after the first run.</p>
+<p><strong>Trust note.</strong> The projector file is <em>engine-trusted input</em>, exactly like the model GGUF itself: a corrupt or hostile file is parsed by native code. Prefer the SHA256-verified registry aliases; treat a projector from any other source with the same care as a model file.</p>
+<h2 id="load-it-with-the-projector">Load it with the projector</h2>
+<p>The projector is bound to the model once, at load time — that is why it is an argument of <code>llm()</code>, not of each call. A handle loaded this way accepts images everywhere; a plain text handle refuses them with a classed error (<code>relm_error_image</code>), never silently ignoring the image.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (run_real) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">llm</span>(model, <span class="at">projector =</span> mmproj)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  m</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="cell">
+<pre><code>#&gt; &lt;llm&gt; Qwen2-VL-2B-Instruct-Q4_K_M.gguf
+#&gt;   architecture:    qwen2vl
+#&gt;   parameters:      1.5 B
+#&gt;   quantization:    Q4_K_M
+#&gt;   layers x hidden: 28 x 1536
+#&gt;   context:         4096 tokens
+#&gt;   backend:         metal
+#&gt;   projector:       mmproj-Qwen2-VL-2B-Instruct-f16.gguf
+#&gt;   interventions:   0 active</code></pre>
+</div>
+<h2 id="draw-an-image-ask-a-question">Draw an image, ask a question</h2>
+<p>No photo download needed: base <code>grDevices</code> can draw the test image right here, which also makes the answer checkable at a glance.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>draw_square <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">on.exit</span>(<span class="fu">par</span>(op))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot.new</span>()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot.window</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">xaxs =</span> <span class="st">&quot;i&quot;</span>, <span class="at">yaxs =</span> <span class="st">&quot;i&quot;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rect</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="at">col =</span> <span class="st">&quot;white&quot;</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rect</span>(<span class="fl">0.215</span>, <span class="fl">0.215</span>, <span class="fl">0.785</span>, <span class="fl">0.785</span>, <span class="at">col =</span> <span class="st">&quot;red&quot;</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_square</span>() <span class="co"># shown here ...</span></span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img role="img" aria-label="A red square centered on a white background." src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAkAAAAJACAMAAABSRCkEAAAABlBMVEX/AAD///9BHTQRAAAACXBIWXMAAB2HAAAdhwGP5fFlAAAIcUlEQVR4nO3SgQkDQBDDsO/+S3eIK5gGaYJA/D5w8OoB/DcBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcVIG9PiN8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8EMBLQg/FNCC8MM0IAYIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTgTEiYA4ERAnAuJEQJwIiBMBcSIgTr60UWldJX7ZbAAAAABJRU5ErkJggg==" alt="A red square centered on a white background." width="288"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>img <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">&quot;red-square.png&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(img, <span class="at">width =</span> <span class="dv">224</span>, <span class="at">height =</span> <span class="dv">224</span>) <span class="co"># ... and saved as the file we hand the model</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_square</span>()</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">dev.off</span>())</span></code></pre></div>
+</div>
+<p><code>images</code> attaches image files to a prompt; each prompt’s images are inserted <strong>before</strong> its text. With <code>temperature = 0</code> decoding is greedy — the model always picks its single most likely next token, so the run is deterministic:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (run_real) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  answer <span class="ot">&lt;-</span> <span class="fu">llm_generate</span>(m, <span class="st">&quot;What color is the square?&quot;</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">images =</span> img, <span class="at">max_tokens =</span> <span class="dv">32</span>, <span class="at">temperature =</span> <span class="dv">0</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(answer)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="cell">
+<pre><code>#&gt; The square is red.</code></pre>
+</div>
+<p>That exact sentence is also this pair’s reference output in the package’s golden tests (the engine is checked byte-for-byte against an unpatched upstream build on the same image and prompt). A free-form question works the same way:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (run_real) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">llm_generate</span>(m, <span class="st">&quot;Describe this image in one short sentence.&quot;</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">images =</span> img, <span class="at">max_tokens =</span> <span class="dv">40</span>, <span class="at">temperature =</span> <span class="dv">0</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> <span class="fu">cat</span>()</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="cell">
+<pre><code>#&gt; A red square on a white background.</code></pre>
+</div>
+<p><strong>How the pairing works.</strong> <code>images</code> is a list parallel to <code>prompt</code> — <code>images[[i]]</code> holds the image paths for prompt <code>i</code>, <code>character(0)</code> for none. A bare character vector (as above) is shorthand for one prompt’s image set; with several prompts it is recycled across all of them, with a warning.</p>
+<h2 id="accepted-formats-and-size-caps">Accepted formats and size caps</h2>
+<p>Exactly three file formats are accepted — <strong>JPEG, PNG, BMP</strong> — checked on the file’s leading bytes <em>before</em> any decoding starts; anything else (GIF and audio files included) raises <code>relm_error_image</code>. Three pre-decode limits also apply, so a hostile or accidental monster file is rejected before it can allocate anything:</p>
+<ul>
+<li>at most <strong>64 MB per file</strong> by default — raise or lower it with <code>options(relm.image_max_bytes = )</code> (the engine keeps a hard ceiling of 2147483647 bytes regardless);</li>
+<li>each dimension between <strong>1 and 16384 pixels</strong>;</li>
+<li>at most <strong>33554432 total pixels</strong> (≈ 33.5 megapixels).</li>
+</ul>
+<p>One content restriction: on an image-bearing prompt the literal string <code>&quot;&lt;__media__&gt;&quot;</code> (the engine’s internal media marker) is reserved and raises <code>relm_error_argument</code>. Prompts without images may contain it freely.</p>
+<h2 id="multimodal-embeddings-is-this-image-more-cat-than-car">Multimodal embeddings: is this image more “cat” than “car”?</h2>
+<p><code>llm_embed()</code> takes the same <code>images</code> argument, giving one matrix row per (text, image) input — and an input that carries an image may have <strong>empty text</strong> (<code>x = &quot;&quot;</code>), which embeds the image alone. Time to draw a cat:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>draw_cat <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">on.exit</span>(<span class="fu">par</span>(op))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot.new</span>()</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot.window</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">xaxs =</span> <span class="st">&quot;i&quot;</span>, <span class="at">yaxs =</span> <span class="st">&quot;i&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rect</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="at">col =</span> <span class="st">&quot;white&quot;</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  orange <span class="ot">&lt;-</span> <span class="st">&quot;#E8853A&quot;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">polygon</span>(<span class="fu">c</span>(<span class="fl">0.28</span>, <span class="fl">0.40</span>, <span class="fl">0.22</span>), <span class="fu">c</span>(<span class="fl">0.62</span>, <span class="fl">0.72</span>, <span class="fl">0.82</span>), <span class="at">col =</span> orange, <span class="at">border =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">polygon</span>(<span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.60</span>, <span class="fl">0.78</span>), <span class="fu">c</span>(<span class="fl">0.62</span>, <span class="fl">0.72</span>, <span class="fl">0.82</span>), <span class="at">col =</span> orange, <span class="at">border =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">polygon</span>(<span class="fu">c</span>(<span class="fl">0.31</span>, <span class="fl">0.37</span>, <span class="fl">0.27</span>), <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.71</span>, <span class="fl">0.77</span>), <span class="at">col =</span> <span class="st">&quot;pink&quot;</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">polygon</span>(<span class="fu">c</span>(<span class="fl">0.69</span>, <span class="fl">0.63</span>, <span class="fl">0.73</span>), <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.71</span>, <span class="fl">0.77</span>), <span class="at">col =</span> <span class="st">&quot;pink&quot;</span>, <span class="at">border =</span> <span class="cn">NA</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">symbols</span>(<span class="fl">0.5</span>, <span class="fl">0.52</span>, <span class="at">circles =</span> <span class="fl">0.24</span>, <span class="at">inches =</span> <span class="cn">FALSE</span>, <span class="at">add =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg =</span> orange, <span class="at">fg =</span> <span class="st">&quot;black&quot;</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">symbols</span>(<span class="fu">c</span>(<span class="fl">0.41</span>, <span class="fl">0.59</span>), <span class="fu">c</span>(<span class="fl">0.58</span>, <span class="fl">0.58</span>), <span class="at">circles =</span> <span class="fu">c</span>(<span class="fl">0.045</span>, <span class="fl">0.045</span>),</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">inches =</span> <span class="cn">FALSE</span>, <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">bg =</span> <span class="st">&quot;#9ACD32&quot;</span>, <span class="at">fg =</span> <span class="st">&quot;black&quot;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">segments</span>(<span class="fu">c</span>(<span class="fl">0.41</span>, <span class="fl">0.59</span>), <span class="fu">c</span>(<span class="fl">0.545</span>, <span class="fl">0.545</span>), <span class="fu">c</span>(<span class="fl">0.41</span>, <span class="fl">0.59</span>), <span class="fu">c</span>(<span class="fl">0.615</span>, <span class="fl">0.615</span>), <span class="at">lwd =</span> <span class="dv">3</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">polygon</span>(<span class="fu">c</span>(<span class="fl">0.475</span>, <span class="fl">0.525</span>, <span class="fl">0.5</span>), <span class="fu">c</span>(<span class="fl">0.485</span>, <span class="fl">0.485</span>, <span class="fl">0.455</span>), <span class="at">col =</span> <span class="st">&quot;pink&quot;</span>, <span class="at">border =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">segments</span>(<span class="fl">0.5</span>, <span class="fl">0.455</span>, <span class="fl">0.5</span>, <span class="fl">0.42</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">segments</span>(<span class="fl">0.5</span>, <span class="fl">0.42</span>, <span class="fl">0.45</span>, <span class="fl">0.40</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">segments</span>(<span class="fl">0.5</span>, <span class="fl">0.42</span>, <span class="fl">0.55</span>, <span class="fl">0.40</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">segments</span>(<span class="fu">rep</span>(<span class="fl">0.44</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="fl">0.46</span>, <span class="fl">0.44</span>, <span class="fl">0.42</span>), <span class="fu">rep</span>(<span class="fl">0.16</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="fl">0.50</span>, <span class="fl">0.44</span>, <span class="fl">0.38</span>), <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">segments</span>(<span class="fu">rep</span>(<span class="fl">0.56</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="fl">0.46</span>, <span class="fl">0.44</span>, <span class="fl">0.42</span>), <span class="fu">rep</span>(<span class="fl">0.84</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="fl">0.50</span>, <span class="fl">0.44</span>, <span class="fl">0.38</span>), <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_cat</span>()</span></code></pre></div>
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img role="img" aria-label="A cartoon cat face: orange head, triangular ears, green eyes, whiskers." src="data:image/png;base64,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" alt="A cartoon cat face: orange head, triangular ears, green eyes, whiskers." width="288"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>cat_img <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">&quot;cat.png&quot;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(cat_img, <span class="at">width =</span> <span class="dv">224</span>, <span class="at">height =</span> <span class="dv">224</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_cat</span>()</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">dev.off</span>())</span></code></pre></div>
+</div>
+<p>Embed the image alone, embed two candidate captions as plain text, and compare. Rows are unit vectors (the default <code>normalize = TRUE</code>), so a dot product is a cosine similarity:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (run_real) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  e_img <span class="ot">&lt;-</span> <span class="fu">llm_embed</span>(m, <span class="st">&quot;&quot;</span>, <span class="at">images =</span> cat_img) <span class="co"># the image alone: one row</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  e_txt <span class="ot">&lt;-</span> <span class="fu">llm_embed</span>(m, <span class="fu">c</span>(<span class="at">cat =</span> <span class="st">&quot;a cat&quot;</span>, <span class="at">car =</span> <span class="st">&quot;a car&quot;</span>))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  sims <span class="ot">&lt;-</span> <span class="fu">drop</span>(<span class="fu">tcrossprod</span>(e_img, e_txt))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(sims, <span class="dv">3</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div class="cell">
+<pre><code>#&gt;   cat   car 
+#&gt; 0.319 0.275</code></pre>
+</div>
+<p>The drawing lands closer to <em>“a cat”</em> than to <em>“a car”</em> — the ranking is the signal here, not the absolute level. Decoder-LLM embeddings are anisotropic (every vector points into a narrow cone of the space), so absolute cosines run high across the board and the exact decimals vary a little by backend; the <em>ordering</em> is what is stable. The package pins this very check as a committed test fixture, drawn by the same base-graphics code.</p>
+<h2 id="what-an-image-bearing-embedding-actually-is-honesty-section">What an image-bearing embedding actually is (honesty section)</h2>
+<p>One paragraph of truth in advertising. When an input carries an image, the pooled vector is reduced over the <strong>text positions</strong> of the sequence (including the model’s own image-delimiter tokens); the image conditions those positions through <strong>attention</strong> — the mechanism that lets each position of a transformer read information from every earlier position. Image patch positions themselves expose no per-token hidden states at the pinned engine version, and this text-position pooling matches the reference llama.cpp behavior exactly (see <code>NEWS.md</code> and decision D-026 in the repository). So an “image-alone” embedding (<code>x = &quot;&quot;</code>) is, precisely: <em>what the model’s text side took away from looking at the image</em> — which is exactly what the cat/car check above measures. Text-only inputs are byte-identical to a text-only handle. This is not a CLIP-style contrastive image encoder, and <code>relm</code> does not claim it is one; for ranking and clustering work like the check above, it is honest and it works.</p>
+<h2 id="beyond-the-default-bring-your-own-pair">Beyond the default: bring your own pair</h2>
+<p>The registry pair above is the <em>reproducible</em> default: Apache-2.0, small enough to download in a vignette, and the pair every <code>relm</code> vision test and golden runs against. It is not a ceiling. <code>projector =</code> takes a plain path, so any VLM plus its matching <code>mmproj-*.gguf</code> loads the same way:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">llm</span>(<span class="st">&quot;~/models/my-vlm.gguf&quot;</span>, <span class="at">projector =</span> <span class="st">&quot;~/models/mmproj-my-vlm.gguf&quot;</span>)</span></code></pre></div>
+<p>The quality tier we point people at is <strong>Gemma 4 E2B</strong>: the engine embedded in <code>relm</code> carries Gemma’s vision projector, and <code>gemma4</code> has been a supported text architecture since v0.1.0, so the pair should load and answer through exactly the code path shown above, with no extra arguments — “should”, because we have not run that checkpoint ourselves. Two honest caveats, both structural rather than incidental:</p>
+<ul>
+<li><strong>You fetch it yourself.</strong> Google gates Gemma’s weights behind a click-through Terms of Use. <code>relm</code> therefore ships no <code>llm_download()</code> alias for it: a checksum-pinned auto-download would either break for everyone who has not accepted the terms, or route around a gate that is not ours to route around. Accept the terms, download the model and its <code>mmproj</code>, pass the paths.</li>
+<li><strong>It is not one of our gated models.</strong> The nightly vision goldens — the byte-exact reference leg and the encoder tolerance leg — run on the pinned Apache-2.0 pair, because a ToU-gated model cannot be fetched by CI. A supported architecture running an untested checkpoint is a reasonable expectation, not a guarantee we measure. If a projector does not match its model, you will hear about it: the load is refused with both embedding widths named, never a silent wrong answer.</li>
+</ul>
+<p>The same two caveats apply to any other local pair, MedGemma included.</p>
+<h2 id="memory-guidance-16-gb-macs">Memory guidance (16 GB Macs)</h2>
+<ul>
+<li>The pinned pair is ~2.3 GB on disk (~1 GB model + ~1.3 GB f16 projector) and runs comfortably inside a 16 GB machine.</li>
+<li>The image encoder allocates its working graph briefly while a picture is ingested; after that, an image only occupies context positions like any other tokens (the 224 × 224 drawings above cost 64 positions each under this projector). The combined text + image tokens must fit <code>context_length</code>; overflowing it raises <code>relm_error_context_overflow</code> stating by how much.</li>
+<li><code>close()</code> handles you are done with, and run one model at a time. If you use Ollama, stop its server before a heavy session — it keeps models resident and competes for the same unified memory.</li>
+</ul>
+<h2 id="pitfalls">Pitfalls</h2>
+<ul>
+<li><strong>Images on a text-only handle fail loudly.</strong> A handle loaded without <code>projector =</code> raises <code>relm_error_image</code> — reload with the projector; no call ever silently drops an image.</li>
+<li><strong>A failed projector load leaks a bounded amount of memory.</strong> A projector that fails to load (e.g. an mmproj built for a different model) is refused with <code>relm_error_image</code>, but the failed attempt leaks the projector weights on the CPU side once per attempt — an upstream llama.cpp constructor issue at the pinned engine version. The session stays healthy; fix the argument and reload, but do not retry a failing projector in a loop.</li>
+<li><strong>Match the projector to the model.</strong> An mmproj whose embedding width does not match the model is rejected with both sizes named. Use the paired registry aliases, or the mmproj published alongside your exact GGUF.</li>
+<li><strong>The vision tower is not yet inspectable.</strong> <code>llm_trace()</code>, <code>llm_steer()</code>, and <code>llm_ablate()</code> operate on the language model’s layers only; v0.2.0 ships no tracing, steering, or ablation <em>inside</em> the image encoder (that is tracked as later research — see the roadmap). Steered or ablated handles derived from a vision handle do keep accepting images.</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (run_real) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">close</span>(m)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>Everything here runs on local hardware with no Python and no API: two GGUF files, base graphics, and three functions you already knew.</p>
+
+
+
+
+
+</body></html>
