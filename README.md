@@ -3,7 +3,7 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/Vadale/R-ebirth/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Vadale/R-ebirth/actions/workflows/R-CMD-check.yaml)
 [![r-universe](https://vadale.r-universe.dev/badges/relm)](https://vadale.r-universe.dev/relm)
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![API baseline: frozen](https://img.shields.io/badge/API%20baseline-frozen-blue.svg)](https://github.com/Vadale/R-ebirth/blob/main/docs/api-policy.md)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](https://github.com/Vadale/R-ebirth/blob/main/LICENSE.md)
 <!-- badges: end -->
 
@@ -23,13 +23,31 @@ The [0.4.0 release](https://github.com/Vadale/R-ebirth/releases/tag/v0.4.0)
 is published, including a verified fresh Mac arm64 r-universe installation.
 Check `packageVersion("relm")` and restart R after upgrading.
 
-This checkout prepares **0.5.0**, combining optional Linux CUDA and CRAN source
-portability. It is not yet a published release or a CRAN-accepted package; see the
+The **0.5.0 source has been submitted to CRAN**, combining optional Linux CUDA
+and source portability. CRAN acceptance is pending; see the
 [submission status](https://github.com/Vadale/R-ebirth/blob/main/docs/cran-submission.md).
+The **0.6.0 release**, published on [r-universe](https://vadale.r-universe.dev/relm),
+adds optional `threads` and exact modern chat templates.
+See [model configuration and measured limits](https://github.com/Vadale/R-ebirth/blob/main/docs/models.md)
+and the [published release scope](https://github.com/Vadale/R-ebirth/releases/tag/v0.6.0).
+Windows ARM64 and webR/WebAssembly are deferred and are not current support or
+release targets. Ordinary PR checks focus on Linux, macOS and Windows x86_64;
+[the CI scope](https://github.com/Vadale/R-ebirth/blob/main/docs/ci-efficiency-implementation.md#pr-check-audit-and-platform-deferral-2026-10-23)
+retains the experimental work for future use. Python is used only by maintainer
+reference/security tests; the R package does not require a Python environment.
+
+## 0.6.1 maintenance update
+
+The 0.6.1 sources contain Python maintainer-tooling security updates, the shared
+extendr R lookup correction and desktop build fixes. Check the version available
+on [r-universe](https://vadale.r-universe.dev/relm) and `packageVersion("relm")`
+after installing. The published 0.6.0 tag and archive remain unchanged.
+Windows ARM64 and WebAssembly stay deferred.
 
 ## Installation
 
-Use [r-universe](https://vadale.r-universe.dev/relm) for macOS and Linux builds:
+Use [r-universe](https://vadale.r-universe.dev/relm) and check the builds available
+for your OS, R version and architecture:
 
 ```r
 install.packages(
@@ -46,8 +64,9 @@ Cargo >= 1.85.0 and rustc >= 1.85.0 (checked separately), CMake >= 3.28,
 [installation guide](https://github.com/Vadale/R-ebirth/blob/main/docs/getting-started.md)
 for source builds and troubleshooting. Development source additionally supports an
 [explicit Linux CUDA build](https://github.com/Vadale/R-ebirth/blob/main/docs/linux-cuda.md);
-released 0.4.0 binaries are not certified CUDA builds. Windows CPU source checks
-passed at PR71; Windows GPU and full live-file lifecycle parity remain unverified.
+an ordinary binary does not establish CUDA capability. Windows CPU source-package
+and corrected 0.5.0 win-builder checks passed; Windows GPU and full live-file
+lifecycle parity remain unverified.
 
 Core imports are `methods` (included with R) and `nanoarrow`, which reads spilled traces.
 `glmnet` is optional for probes; `uwot` and `dbscan` are optional demo packages.
@@ -58,6 +77,8 @@ Application examples prepare their own separate dependency environments.
 
 The small Qwen model below is approximately 675 MB. `llm_download()` verifies
 the pinned Apache-2.0 model by SHA256 and reuses a matching cached copy.
+For another model, see [choosing and changing models](https://github.com/Vadale/R-ebirth/blob/main/docs/models.md):
+registry aliases, your own local GGUF, matched vision projectors and operation limits.
 
 ```r
 library(relm)
@@ -226,3 +247,16 @@ native engine and its boundaries.
 Original code is **MIT OR Apache-2.0**. Vendored llama.cpp is MIT. Modified
 redistributions must rename under the
 [trademark policy](https://github.com/Vadale/R-ebirth/blob/main/TRADEMARK.md).
+
+## Agent documentation and compatibility
+
+Start with the [agent guide](https://github.com/Vadale/R-ebirth/blob/main/docs/agents.md),
+[llms.txt](https://github.com/Vadale/R-ebirth/blob/main/llms.txt) and the
+[API/version policy](https://github.com/Vadale/R-ebirth/blob/main/docs/api-policy.md).
+The WP16 build includes sixteen independent R example scripts under
+`system.file("examples", "agents", package = "relm")`. Sourcing a script defines
+its example; it never downloads a model or starts inference automatically.
+
+The public API baseline includes the current exports and registered S3 methods.
+The project's thirty-day green-CI gate precedes a future 1.0 release; CRAN admission
+and external-human usability are separate outcomes.

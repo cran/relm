@@ -1,6 +1,6 @@
 Package: relm
 Title: Local Large Language Models as Base-R Objects
-Version: 0.5.0
+Version: 0.6.2
 Authors@R: 
     c(person("Alessandro", "Vadala", , "vadale93@gmail.com", role = c("aut", "cre", "cph")),
       person("ggml authors", role = c("ctb", "cph"), comment = "Bundled llama.cpp and ggml (MIT)"),
@@ -36,7 +36,7 @@ Config/rextendr/version: 0.5.0
 SystemRequirements: Cargo (Rust's package manager) >= 1.85.0, rustc >=
         1.85.0, cmake (>= 3.28), xz
 NeedsCompilation: yes
-Packaged: 2026-10-19 17:50:24 UTC; runneradmin
+Packaged: 2026-11-01 20:22:38 UTC; runner
 Author: Alessandro Vadala [aut, cre, cph],
   ggml authors [ctb, cph] (Bundled llama.cpp and ggml (MIT)),
   Authors of the bundled Rust and native dependencies [ctb, cph]
@@ -44,4 +44,4 @@ Author: Alessandro Vadala [aut, cre, cph],
     RUST-NOTICES and THIRD-PARTY-NOTICES)
 Maintainer: Alessandro Vadala <vadale93@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-10-29 19:20:02 UTC
+Date/Publication: 2026-11-02 21:00:12 UTC

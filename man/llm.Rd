@@ -11,7 +11,8 @@ llm(
   gpu_layers = NULL,
   backend = c("auto", "metal", "cuda", "cpu"),
   mmap = TRUE,
-  projector = NULL
+  projector = NULL,
+  threads = NULL
 )
 
 \method{print}{llm}(x, ...)
@@ -33,6 +34,12 @@ non-negative integer count of layers to offload (llama.cpp:
 \item{projector}{\code{NULL} (default: text-only, unchanged) or a single string:
 path to the model's \strong{mmproj GGUF}, enabling image input (see the
 \emph{Image input} section).}
+
+\item{threads}{\code{NULL} (default: preserve native defaults) or a single positive
+whole number of CPU threads for text generation and prompt processing.
+Derived generation, embedding, trace and intervention contexts inherit it.
+R check-time core limits take precedence. This does not set the separate
+vision projector's threads or guarantee faster inference.}
 
 \item{x}{An \code{llm} handle.}
 
@@ -58,10 +65,12 @@ finalizer frees it as a safety net otherwise (see \code{\link[=close.llm]{close.
 Metal, then CUDA, then CPU. It does not benchmark their speed. Requesting a backend the build was
 not compiled with raises \code{relm_error_backend}.
 
-No model ships inside the package yet, so the runnable example is guarded by
-the \code{RELM_TEST_MODEL_QWEN} environment variable (point it at a local
-Qwen2.5 GGUF to run it). A tiny in-repo model arrives in a later work
-package.
+Supply your own compatible GGUF, or a pinned file fetched by \code{\link[=llm_download]{llm_download()}}.
+No pretrained user model ships inside the package; tiny test fixtures are not
+conversational models. The runnable example is guarded by the
+\code{RELM_TEST_MODEL_QWEN} environment variable (point it at a local Qwen2.5 GGUF).
+Loading a model does not guarantee support for every observation or
+intervention API; unsupported capabilities are explicitly refused.
 }
 \section{Image input (vision models)}{
 
